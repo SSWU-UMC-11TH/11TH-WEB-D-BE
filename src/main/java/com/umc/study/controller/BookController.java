@@ -1,4 +1,5 @@
 // src/main/java/.../controller/BookController.java
+
 package com.umc.study.controller;
 
 import com.umc.study.dto.BookResponse;
@@ -9,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import com.umc.study.dto.BookCreateRequest;
+
 @RestController
 @RequestMapping("/books")
 @RequiredArgsConstructor
@@ -18,5 +23,11 @@ public class BookController {
     @GetMapping
     public List<BookResponse> getBooks() {
         return bookService.getBooks();
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public BookResponse createBook(@Valid @RequestBody BookCreateRequest request) {
+        return bookService.createBook(request);
     }
 }
