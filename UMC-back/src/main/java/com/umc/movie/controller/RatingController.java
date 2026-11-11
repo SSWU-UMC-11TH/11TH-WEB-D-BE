@@ -1,10 +1,10 @@
-
 package com.umc.movie.controller;
 
 import com.umc.movie.dto.ApiResponse;
 import com.umc.movie.dto.CreateRatingRequest;
 import com.umc.movie.dto.RatingResponse;
 import com.umc.movie.dto.UpdateRatingRequest;
+import com.umc.movie.interceptor.AuthInterceptor;
 import com.umc.movie.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,47 +15,56 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/members")
 public class RatingController {
 
     private final RatingService ratingService;
 
-    @GetMapping("/{memberId}/ratings")
-    public List<RatingResponse> getMemberRatings(@PathVariable Long memberId) {
+    // 5주차: 회원별 평점 조회 (기존 기능 유지)
+    @GetMapping("/members/{memberId}/ratings")
+    public List<RatingResponse> getMemberRatings(
+            @PathVariable Long memberId
+    ) {
         return ratingService.getRatingsByMember(memberId);
     }
 
-    @PostMapping("/{memberId}/ratings")
-    public ResponseEntity<ApiResponse<Long>> create(
-            @PathVariable Long memberId,
-            @Valid @RequestBody CreateRatingRequest request
+    // 7주차 실습 5: JWT 기반 평점 등록
+    @PostMapping("/ratings")
+    public ResponseEntity<ApiResponse<RatingResponse>> create(
+            @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,
+            @RequestBody @Valid CreateRatingRequest request
     ) {
-        Long ratingId = ratingService.create(memberId, request);
+        RatingResponse response = ratingService.create(memberId, request);
 
         return ResponseEntity.status(201)
-                .body(ApiResponse.created("평점 등록에 성공했습니다.", ratingId));
+                .body(ApiResponse.created("평점을 등록했습니다.", response));
     }
 
-    @PatchMapping("/{memberId}/ratings/{ratingId}")
-    public ResponseEntity<ApiResponse<Void>> update(
-            @PathVariable Long memberId,
+    // 7주차 실습 5: JWT 기반 평점 수정
+    @PatchMapping("/ratings/{ratingId}")
+    public ResponseEntity<ApiResponse<RatingResponse>> update(
+            @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,
             @PathVariable Long ratingId,
-            @Valid @RequestBody UpdateRatingRequest request
+            @RequestBody @Valid UpdateRatingRequest request
     ) {
-        ratingService.update(ratingId, memberId, request);
+        RatingResponse response = ratingService.update(
+                memberId, ratingId, request
+        );
 
         return ResponseEntity.ok(
-                ApiResponse.ok("평점 수정에 성공했습니다.", null)
+                ApiResponse.ok("평점을 수정했습니다.", response)
         );
     }
 
-    @DeleteMapping("/{memberId}/ratings/{ratingId}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long memberId,
+    // 7주차 실습 5: JWT 기반 평점 삭제
+    @DeleteMapping("/ratings/{ratingId}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,
             @PathVariable Long ratingId
     ) {
-        ratingService.delete(ratingId, memberId);
+        ratingService.delete(memberId, ratingId);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(
+                ApiResponse.ok("평점을 삭제했습니다.", null)
+        );
     }
 }

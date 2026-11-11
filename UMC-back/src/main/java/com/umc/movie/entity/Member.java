@@ -1,4 +1,3 @@
-
 package com.umc.movie.entity;
 
 import jakarta.persistence.*;
@@ -31,6 +30,11 @@ public class Member extends BaseTimeEntity {
     public Member(String email, String password, String nickname) {
         this.email = email;
         this.password = password;
+        this.nickname = nickname;
+    }
+
+    // 7주차 실습 4: 닉네임 수정
+    public void updateNickname(String nickname) {
         this.nickname = nickname;
     }
 }
